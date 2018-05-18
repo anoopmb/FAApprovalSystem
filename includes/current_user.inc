@@ -23,6 +23,7 @@ class current_user
 	var $username;
 	var $name;
 	var $email;
+    var $approver=false;
 	var $company; // user's company
 	var $pos;
 	var $access;
@@ -131,6 +132,7 @@ class current_user
         	    $this->username = $this->loginname;
         	    $this->prefs = new user_prefs($myrow);
         	    $this->user = @$myrow["id"];
+                $this->approver = @$myrow["allow_direct_posting"];
                 $this->email = @$myrow["email"];
 		    	update_user_visitdate($this->username);
 		    	$this->logged = true;
