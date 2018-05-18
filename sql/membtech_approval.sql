@@ -1,6 +1,8 @@
 
-ALTER TABLE `0_gl_trans` ADD `user_id` int(11) DEFAULT NULL AFTER `person_id` ;
-ALTER TABLE `0_gl_trans` ADD `status` tinyint(1) NOT NULL DEFAULT '0' AFTER `user_id` ;
+ALTER TABLE `0_users` ADD `allow_direct_posting` tinyint(1) NOT NULL DEFAULT '0';
+ALTER TABLE `0_gl_trans` ADD `user_id` int(11) DEFAULT NULL AFTER `person_id`;
+ALTER TABLE `0_gl_trans` ADD `status` tinyint(1) NOT NULL DEFAULT '0' AFTER `user_id`;
+
 
 DROP TABLE IF EXISTS `0_gl_approvals`;
 
@@ -12,3 +14,13 @@ CREATE TABLE `0_gl_approvals` (
   `user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB ;
+
+
+
+
+
+
+
+
+
+
