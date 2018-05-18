@@ -132,7 +132,7 @@ class current_user
         	    $this->username = $this->loginname;
         	    $this->prefs = new user_prefs($myrow);
         	    $this->user = @$myrow["id"];
-                $this->approver = @$myrow["allow_direct_posting"];
+                $this->approver = @$myrow["allow_direct_posting"]==1;
                 $this->email = @$myrow["email"];
 		    	update_user_visitdate($this->username);
 		    	$this->logged = true;
