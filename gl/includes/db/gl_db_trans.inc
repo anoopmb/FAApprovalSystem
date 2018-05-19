@@ -147,6 +147,7 @@ function get_gl_transactions($from_date, $to_date, $trans_no=0,
 		AND ISNULL(v.date_)
 		AND gl.tran_date >= '$from'
 		AND gl.tran_date <= '$to'
+		AND gl.status =1
 		AND gl.amount <> 0"; 
 
 	if ($person_id)
@@ -206,6 +207,7 @@ function get_gl_trans($type, $trans_id)
 		." WHERE gl.type= ".db_escape($type) 
 		." AND gl.type_no = ".db_escape($trans_id)
 		." AND gl.amount <> 0"
+        ." AND gl.status =1"
 		." ORDER BY tran_date, counter";
 
 	return db_query($sql, "The gl transactions could not be retrieved");
@@ -224,7 +226,9 @@ function get_gl_wo_cost_trans($trans_id, $cost_type=-1, $all_gl=false)
 			costing.workorder_id=".db_escape($trans_id)
 		."	AND chart.account_code=gl.account
 			AND gl.type=costing.trans_type
-			AND gl.type_no=costing.trans_no";
+			AND gl.type_no=costing.trans_no"
+        ." AND gl.status =1"
+    ;
 	if ($cost_type != -1)
 		$sql .= " AND costing.cost_type=".db_escape($cost_type);
 	$sql .= $all_gl ? " AND amount != 0" : " AND amount < 0";
@@ -241,8 +245,9 @@ function get_gl_wo_issue_trans($trans_id, $person_id=-1, $all_gl=false)
 			.TB_PREF."chart_master chart
 		WHERE issue.workorder_id=".db_escape($trans_id)
 		 ." AND chart.account_code=gl.account
-			AND gl.type=".ST_MANUISSUE." AND gl.type_no=issue.issue_no";
+			AND gl.type=".ST_MANUISSUE." AND gl.type_no=issue.issue_no"
 //			." AND gl.person_type_id=".PT_WORKORDER;
+    ." AND gl.status =1";
 	if ($person_id != -1)
 		$sql .= " AND gl.person_id=".db_escape($person_id);
 	$sql .= $all_gl ? " AND amount != 0" : " AND amount < 0";
@@ -263,6 +268,7 @@ function get_gl_wo_productions($trans_id, $all_gl=false)
 			AND gl.type=".ST_MANURECEIVE."
 			AND gl.type_no=rcv.id
 			AND amount != 0 "
+        ." AND gl.status =1"
 		.($all_gl ? " AND amount != 0" : " AND amount < 0")
 		." ORDER BY type, type_no";
 
@@ -275,7 +281,8 @@ function get_gl_balance_from_to($from_date, $to_date, $account, $dimension=0, $d
 	$to = date2sql($to_date);
 
     $sql = "SELECT SUM(amount) FROM ".TB_PREF."gl_trans
-		WHERE account='$account'";
+		WHERE account='$account'"
+        ." AND status =1";
 	if ($from_date != "")
 		$sql .= "  AND tran_date > '$from'";
 	if ($to_date != "")
@@ -299,7 +306,8 @@ function get_gl_trans_from_to($from_date, $to_date, $account, $dimension=0, $dim
 	$to = date2sql($to_date);
 
     $sql = "SELECT SUM(amount) FROM ".TB_PREF."gl_trans
-		WHERE account='$account'";
+		WHERE account='$account'"
+        ." AND status =1";
 	if ($from_date != "")
 		$sql .= " AND tran_date >= '$from'";
 	if ($to_date != "")
@@ -331,6 +339,7 @@ function get_balance($account, $dimension, $dimension2, $from, $to, $from_incl=t
 		WHERE trans.account=coa.account_code
 			AND coa.account_type=act_type.id 
 		AND act_type.class_id=act_class.cid"
+        ." AND trans.status =1"
 		." AND ".($from_incl ? "tran_date >= '$from_date'" : "tran_date > IF(ctype>0 AND ctype<".CL_INCOME.", '0000-00-00', '$from_date')")
 		." AND ".($to_incl ? "tran_date <= '$to_date'" : "tran_date < '$to_date'")
 		.($account == null ? '' : " AND account=".db_escape($account))
@@ -561,7 +570,7 @@ function get_tax_summary($from, $to, $also_zero_purchases=false)
 function exists_gl_trans($type, $trans_id)
 {
 	$sql = "SELECT type_no FROM ".TB_PREF."gl_trans WHERE type=".db_escape($type)
-		." AND type_no=".db_escape($trans_id);
+		." AND type_no=".db_escape($trans_id)." AND status=1";
 	$result = db_query($sql, "Cannot retreive a gl transaction");
 
     return (db_num_rows($result) > 0);
@@ -636,7 +645,8 @@ function get_sql_for_journal_inquiry($filter, $from, $to, $ref='', $memo='', $al
 		 		ON gl.type=dim.type AND gl.type_no=dim.type_no" : '')
 		." WHERE gl.tran_date >= '" . date2sql($from) . "'
 		AND gl.tran_date <= '" . date2sql($to) . "'
-		AND gl.amount!=0";
+		AND gl.amount!=0
+        AND gl.status=1";
 	if ($ref) {
 		$sql .= " AND refs.reference LIKE ". db_escape("%$ref%");
 	}
