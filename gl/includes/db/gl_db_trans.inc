@@ -51,8 +51,8 @@ function add_gl_trans($type, $trans_id, $date_, $account, $dimension, $dimension
 	if ($person_type_id != null)
 		$sql .= ", person_type_id, person_id";
 
-        doLog($SysPrefs->user);
-    doLog($SysPrefs->approver);
+        doLog($_SESSION["wa_current_user"]->user);
+    doLog($_SESSION["wa_current_user"]->approver);
 
 	$sql .= ") ";
 
@@ -60,8 +60,8 @@ function add_gl_trans($type, $trans_id, $date_, $account, $dimension, $dimension
 		".db_escape($account).", ".db_escape($dimension).", "
 		.db_escape($dimension2).", ".db_escape($memo_).", "
 		.db_escape($amount_in_home_currency).", "
-        .db_escape($SysPrefs->user).", "
-        .db_escape($SysPrefs->approver);
+        .db_escape($_SESSION["wa_current_user"]->user).", "
+        .db_escape($_SESSION["wa_current_user"]->approver);
 
 	if ($person_type_id != null)
 		$sql .= ", ".db_escape($person_type_id).", ". db_escape($person_id);
