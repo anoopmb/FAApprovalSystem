@@ -61,7 +61,6 @@ class current_user
 	function login($company, $loginname, $password)
 	{
 		global $security_areas, $security_groups, $security_headings, $path_to_root, $dflt_lang, $SysPrefs;
-
 		$this->set_company($company);
 	    $this->logged = false;
 
@@ -132,7 +131,7 @@ class current_user
         	    $this->username = $this->loginname;
         	    $this->prefs = new user_prefs($myrow);
         	    $this->user = @$myrow["id"];
-                $this->approver = @$myrow["allow_direct_posting"]==1;
+                $this->approver = @$myrow["allow_direct_posting"]?:0;
                 $this->email = @$myrow["email"];
 		    	update_user_visitdate($this->username);
 		    	$this->logged = true;

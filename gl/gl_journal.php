@@ -57,8 +57,9 @@ if (isset($_GET['AddedID']))
    	if($_SESSION["wa_current_user"]->approver)
    	    display_notification_centered( _("Journal entry has been entered") . " #$trans_no");
     else
-        display_notification_centered( _("Journal entry has been entered") . " #$trans_no")." Pending Approval from Administrator";
+        display_notification_centered( _("Journal entry #$trans_no has been entered. Pending Approval"));
 
+    if($_SESSION["wa_current_user"]->approver)
     display_note(get_gl_view_str($trans_type, $trans_no, _("&View this Journal Entry")));
 
 	reset_focus();
