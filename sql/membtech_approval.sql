@@ -10,6 +10,7 @@ CREATE TABLE `0_gl_approvals` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` smallint(6) NOT NULL DEFAULT '0',
   `type_no` int(11) NOT NULL DEFAULT '0',
+  `tran_date` date NOT NULL DEFAULT '0000-00-00',
   `memo_` varchar(200) NOT NULL DEFAULT '',
   `user_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
