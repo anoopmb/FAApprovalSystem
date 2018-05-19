@@ -51,8 +51,6 @@ function add_gl_trans($type, $trans_id, $date_, $account, $dimension, $dimension
 	if ($person_type_id != null)
 		$sql .= ", person_type_id, person_id";
 
-        doLog($_SESSION["wa_current_user"]->user);
-    doLog($_SESSION["wa_current_user"]->approver);
 
 	$sql .= ") ";
 
