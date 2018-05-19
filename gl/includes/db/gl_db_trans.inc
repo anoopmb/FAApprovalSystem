@@ -677,3 +677,45 @@ function get_sql_for_journal_inquiry($filter, $from, $to, $ref='', $memo='', $al
 
 	return $sql;
 }
+
+
+function get_sql_for_pending_journal_inquiry($filter, $from, $to, $ref='',
+                                     $user_id=null)
+{
+
+    $sql = "SELECT
+		gl.tran_date,
+		gl.type as trans_type,
+		gl.type_no as trans_no,
+		refs.reference,
+		SUM(IF(gl.amount>0, gl.amount,0)) as amount,
+		u.user_id as user_id,
+		IF(gl.status=2, 'Rejected','Pending') as status";
+
+    $sql.= " FROM ".TB_PREF."gl_trans as gl
+		 LEFT JOIN ".TB_PREF."refs as refs ON
+			(gl.type=refs.type AND gl.type_no=refs.id)
+		 LEFT JOIN ".TB_PREF."users as u ON
+			gl.user_id=u.id
+         WHERE gl.tran_date >= '" . date2sql($from) . "'
+		AND gl.tran_date <= '" . date2sql($to) . "'
+		AND gl.amount!=0
+        AND gl.status <> 1";
+    if ($ref) {
+        $sql .= " AND refs.reference LIKE ". db_escape("%$ref%");
+    }
+
+    if ($filter != -1) {
+        $sql .= " AND gl.type=".db_escape($filter);
+    }
+
+
+    if ($user_id != null)
+        $sql .= " AND user_id = ".db_escape($user_id);
+
+
+
+    $sql .= " GROUP BY gl.tran_date, gl.type, gl.type_no";
+
+    return $sql;
+}
