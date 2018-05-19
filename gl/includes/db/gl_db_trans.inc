@@ -46,17 +46,21 @@ function add_gl_trans($type, $trans_id, $date_, $account, $dimension, $dimension
 		$person_id = $person_type_id = null;
 	
 	$sql = "INSERT INTO ".TB_PREF."gl_trans ( type, type_no, tran_date,
-		account, dimension_id, dimension2_id, memo_, amount";
+		account, dimension_id, dimension2_id, memo_, amount,user_id,status";
 
 	if ($person_type_id != null)
 		$sql .= ", person_type_id, person_id";
+
+
 
 	$sql .= ") ";
 
 	$sql .= "VALUES (".db_escape($type).", ".db_escape($trans_id).", '$date',
 		".db_escape($account).", ".db_escape($dimension).", "
 		.db_escape($dimension2).", ".db_escape($memo_).", "
-		.db_escape($amount_in_home_currency);
+		.db_escape($amount_in_home_currency).", "
+        .db_escape($SysPrefs->user).", "
+        .db_escape($SysPrefs->approver);
 
 	if ($person_type_id != null)
 		$sql .= ", ".db_escape($person_type_id).", ". db_escape($person_id);
