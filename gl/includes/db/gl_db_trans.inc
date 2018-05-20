@@ -186,7 +186,7 @@ function get_gl_transactions($from_date, $to_date, $trans_no=0,
 
 //--------------------------------------------------------------------------------
 
-function get_gl_trans($type, $trans_id)
+function get_gl_trans($type, $trans_id,$hide_pending=true)
 {
 	$sql = "SELECT gl.*, cm.account_name, IFNULL(refs.reference, '') AS reference, user.real_name, 
 			COALESCE(st.tran_date, dt.tran_date, bt.trans_date, grn.delivery_date, gl.tran_date) as doc_date,
@@ -206,9 +206,10 @@ function get_gl_trans($type, $trans_id)
 
 		." WHERE gl.type= ".db_escape($type) 
 		." AND gl.type_no = ".db_escape($trans_id)
-		." AND gl.amount <> 0"
-        ." AND gl.status =1"
-		." ORDER BY tran_date, counter";
+		." AND gl.amount <> 0";
+        if($hide_pending)
+            $sql.=" AND gl.status =1";
+        $sql.=" ORDER BY tran_date, counter";
 
 	return db_query($sql, "The gl transactions could not be retrieved");
 }

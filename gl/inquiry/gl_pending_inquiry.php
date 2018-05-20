@@ -72,12 +72,15 @@ function view_link($row)
     return get_trans_view_str($row["trans_type"], $row["trans_no"]);
 }
 
-function gl_link($row)
+function approve($row)
 {
     return get_gl_view_str($row["trans_type"], $row["trans_no"]);
 }
 
-
+function reject($row)
+{
+    return get_gl_view_str($row["trans_type"], $row["trans_no"]);
+}
 
 
 $sql = get_sql_for_pending_journal_inquiry(get_post('filterType', -1), get_post('FromDate'),
@@ -91,7 +94,8 @@ $cols = array(
     _("Amount") => array('type'=>'amount'),
     _("Entered By") => array('align'=>'center'),
     _("Status") => array('align'=>'center'),
-   array('insert'=>true, 'fun'=>'gl_link')
+    array('insert'=>true, 'fun'=>'approve'),
+    array('insert'=>true, 'fun'=>'reject')
 );
 
 
