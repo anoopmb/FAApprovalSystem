@@ -88,6 +88,14 @@ function get_user($id)
 	return db_fetch($result);
 }
 
+function get_user_real_name($id)
+{
+    $sql = "SELECT real_name FROM ".TB_PREF."users WHERE id=".db_escape($id);
+
+    $result = db_query($sql, "could not get user $id");
+    $ret= db_fetch($result);
+    return $ret[0];
+}
 //-----------------------------------------------------------------------------------------------
 
 function get_user_by_login($user_id)

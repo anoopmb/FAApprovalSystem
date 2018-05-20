@@ -720,3 +720,15 @@ function get_sql_for_pending_journal_inquiry($filter, $from, $to, $ref='',
 
     return $sql;
 }
+
+function get_approval_details($type, $type_no)
+{
+    $sql = "SELECT * FROM ".TB_PREF."gl_approvals WHERE type="
+        .db_escape($type)." AND type_no=".db_escape($type_no);
+
+    $result=db_query($sql, "could not query comments transaction table");
+    if(db_num_rows($result))
+        return db_fetch($result);
+    else
+        return null;
+}
