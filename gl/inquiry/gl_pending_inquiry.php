@@ -8,9 +8,10 @@
 
 $page_security = 'SA_GLAPPROVE';
 $path_to_root = "../..";
+include($path_to_root . "/includes/db_pager.inc");
 include_once($path_to_root . "/includes/session.inc");
 
-include($path_to_root . "/includes/db_pager.inc");
+
 
 include_once($path_to_root . "/admin/db/fiscalyears_db.inc");
 include_once($path_to_root . "/includes/date_functions.inc");
@@ -180,7 +181,7 @@ $cols = array(
 );
 
 
-$table =& new_db_pager('journal_pending_tbl', $sql, $cols);
+$table =new_db_pager('journal_pending_tbl', $sql, $cols);
 
 $table->width = "80%";
 
