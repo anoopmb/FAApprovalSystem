@@ -47,7 +47,8 @@ start_row();
 
 ref_cells(_("Reference:"), 'Ref', '',null, _('Enter reference fragment or leave empty'));
 
-journal_types_list_cells(_("Type:"), "filterType");
+journal_types_list_cells(_("Transaction Type:"), "filterType");
+approval_type_list_cells(_("Type:"), "atype");
 date_cells(_("From:"), 'FromDate', '', null, 0, -1, 0);
 date_cells(_("To:"), 'ToDate');
 
@@ -165,7 +166,7 @@ if (strlen($id)>0&&strpos($id, '~') !== false)
 }
 
 $sql = get_sql_for_pending_journal_inquiry(get_post('filterType', -1), get_post('FromDate'),
-    get_post('ToDate'), get_post('Ref'),  get_post('userid'));
+    get_post('ToDate'), get_post('Ref'),  get_post('userid'),  get_post('atype'));
 
 $cols = array(
     _("Date") =>array('name'=>'tran_date','type'=>'date','ord'=>'desc'),

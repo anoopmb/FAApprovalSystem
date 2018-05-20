@@ -2718,3 +2718,18 @@ function collations_list_row($label, $name, $selected_id=null)
 		array('select_submit'=> false) );
 	echo "</td></tr>\n";
 }
+function approval_type_list_cells($label, $name, $selected=null, $submit_on_change=false)
+{
+
+    if ($label != null)
+        label_cell($label);
+    echo "<td>\n";
+    $allocs = array(
+        ALL_NUMERIC=>_("All"),
+        '0'=> _("Pending"),
+        '1'=> _("Approved"),
+        '2' => _("Rejected")
+    );
+    echo array_selector($name, $selected, $allocs, array('select_submit'=> $submit_on_change));
+    echo "</td>\n";
+}
