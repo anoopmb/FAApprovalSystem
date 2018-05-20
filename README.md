@@ -1,22 +1,25 @@
-FrontAccounting ERP
-===================
+FrontAccounting ERP with Approval System Integration for GL Postings (Modification)
+=======================================================================
 
-FrontAccounting ERP is open source, web-based accounting software for small and medium enterprises.
-It supports double entry accounting providing both low level journal entry and user friendly, document based 
-interface for everyday business activity with automatic GL postings generation. This is multicurrency,
-multilanguage system with active worldwide users community:
+This is one of another modification to FrontAccounting. There may be bugs and I am not giving any warranty for my modifications.
 
-Project web site http://frontaccounting.com
+1. When creating users we can enable or disable direct Gl posting for that user
 
-SourceForge project page: http://sourceforge.net/projects/frontaccounting/
+2. In access setup we can enable or disable Modifying approval pending Gl Posting
 
-Central users forum: http://frontaccounting.com/punbb/index.php
+3. Approver can approve,reject or void that transaction
 
-Main code repository: https://sourceforge.net/p/frontaccounting/git/ci/master/tree/
+4. Rejection and voiding will prompt for memo 
 
-GitHub mirror: http://github.com/FrontAccountingERP/FA
 
-Mantis bugtracker: http://mantis.frontaccounting.com
+Demo
 
-FrontAccounting is available under GPL v.3 license.
+http://membtech.com/demo/fab
+
+Approver 
+login : admin and demo
+
+User/Accountant
+
+login : demouser and demo
 
