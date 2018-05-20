@@ -568,10 +568,12 @@ function get_tax_summary($from, $to, $also_zero_purchases=false)
 
 //--------------------------------------------------------------------------------------------------
 
-function exists_gl_trans($type, $trans_id)
+function exists_gl_trans($type, $trans_id,$hide_pending=true)
 {
 	$sql = "SELECT type_no FROM ".TB_PREF."gl_trans WHERE type=".db_escape($type)
-		." AND type_no=".db_escape($trans_id)." AND status=1";
+		." AND type_no=".db_escape($trans_id);
+	if($hide_pending)
+	    $sql.=" AND status=1";
 	$result = db_query($sql, "Cannot retreive a gl transaction");
 
     return (db_num_rows($result) > 0);
@@ -691,7 +693,7 @@ function get_sql_for_pending_journal_inquiry($filter, $from, $to, $ref='',
 		refs.reference,
 		SUM(IF(gl.amount>0, gl.amount,0)) as amount,
 		u.user_id as user_id,
-		IF(gl.status=2, 'Rejected','Pending') as status";
+		gl.status as status";
 
     $sql.= " FROM ".TB_PREF."gl_trans as gl
 		 LEFT JOIN ".TB_PREF."refs as refs ON

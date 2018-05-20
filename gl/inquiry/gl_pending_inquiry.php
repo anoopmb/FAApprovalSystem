@@ -18,7 +18,7 @@ include_once($path_to_root . "/includes/ui.inc");
 include_once($path_to_root . "/includes/data_checks.inc");
 
 include_once($path_to_root . "/gl/includes/gl_db.inc");
-
+include_once($path_to_root . "/admin/db/voiding_db.inc");
 $js = '';
 set_focus('account');
 if ($SysPrefs->use_popup_windows)
@@ -59,7 +59,8 @@ submit_cells('Search', _("Search"), '', '', 'default');
 end_row();
 end_table(1);
 
-
+hidden('prompt_message',"");
+hidden('void_message',"");
 function systype_name($dummy, $type)
 {
     global $systypes_array;
@@ -67,21 +68,96 @@ function systype_name($dummy, $type)
     return $systypes_array[$type];
 }
 
+function status_msg($row)
+{
+    switch ($row['status']){
+        case 0:
+            return "Pending";
+            break;
+        case 1:
+            return "Approved";
+            break;
+        case 2:
+            return "Rejected";
+            break;
+        case 3:
+            return "Voided";
+            break;
+    }
+}
 function view_link($row)
 {
     return get_trans_view_str($row["trans_type"], $row["trans_no"]);
 }
 
-function approve($row)
+function gl_link($row)
 {
     return get_gl_view_str($row["trans_type"], $row["trans_no"]);
+}
+
+function approve($row)
+{
+    if($row["status"]==1)
+        return button('pending'.$row["trans_type"]."~".$row["trans_no"],"","Revert to Pending",ICON_CANCEL);
+    else
+        return button('approve'.$row["trans_type"]."~".$row["trans_no"],"","Approve",ICON_ADD);
 }
 
 function reject($row)
 {
-    return get_gl_view_str($row["trans_type"], $row["trans_no"]);
+
+    if($row["status"]==2)
+        return void_button('void'.$row["trans_type"]."~".$row["trans_no"],"","Void Transaction",ICON_DELETE);
+    else
+        return confirm_button('reject'.$row["trans_type"]."~".$row["trans_no"],"","Reject",ICON_REMOVE);
 }
 
+
+$id = find_submit('reject',false);
+if (strlen($id)>0&&strpos($id, '~') !== false)
+{
+   $det=explode("~",$id);
+   $Ajax->activate('journal_pending_tbl');
+}
+
+
+
+$id = find_submit('void',false);
+if (strlen($id)>0&&strpos($id, '~') !== false)
+{
+    $det=explode("~",$id);
+    $Ajax->activate('journal_pending_tbl');
+}
+
+
+
+$id = find_submit('approve',false);
+if (strlen($id)>0&&strpos($id, '~') !== false)
+{
+    $det=explode("~",$id);
+
+    $msg = void_transaction($det[0], 6,
+        Today(), $_POST['void_message']);
+    $_POST['void_message']="";
+    if (!$msg)
+    {
+        display_notification_centered(_("Selected transaction has been voided."));
+
+    }
+    else {
+        display_error($msg);
+    }
+    $Ajax->activate('_page_body');
+}
+
+
+
+$id = find_submit('pending',false);
+if (strlen($id)>0&&strpos($id, '~') !== false)
+{
+    $det=explode("~",$id);
+    $Ajax->activate('journal_pending_tbl');
+}
 
 $sql = get_sql_for_pending_journal_inquiry(get_post('filterType', -1), get_post('FromDate'),
     get_post('ToDate'), get_post('Ref'),  get_post('userid'));
@@ -93,7 +169,8 @@ $cols = array(
     _("Reference"),
     _("Amount") => array('type'=>'amount'),
     _("Entered By") => array('align'=>'center'),
-    _("Status") => array('align'=>'center'),
+    _("Status") => array('fun'=>'status_msg','align'=>'center','ord'=>'asc','name'=>'status'),
+    array('insert'=>true, 'fun'=>'gl_link'),
     array('insert'=>true, 'fun'=>'approve'),
     array('insert'=>true, 'fun'=>'reject')
 );

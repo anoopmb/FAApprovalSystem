@@ -195,20 +195,20 @@ function callEditor(key) {
 }
 
 function passBack(value) {
-	var o = opener;
-	if(value != false) {
-		var back = o.editors[o.editors._call]; // form input bindings
-		var to = o.document.getElementsByName(back[1])[0];
-		if (to) {
-			if (to[0] != undefined)
-				to[0].value = value; // ugly hack to set selector to any value
-			to.value = value;
-			// update page after item selection
-			o.JsHttpRequest.request('_'+to.name+'_update', to.form);
-			o.setFocus(to.name);
-		}
-	}
-	close();
+  var o = opener;
+  if(value != false) {
+    var back = o.editors[o.editors._call]; // form input bindings
+    var to = o.document.getElementsByName(back[1])[0];
+    if (to) {
+      if (to[0] != undefined)
+        to[0].value = value; // ugly hack to set selector to any value
+      to.value = value;
+      // update page after item selection
+      o.JsHttpRequest.request('_'+to.name+'_update', to.form);
+      o.setFocus(to.name);
+    }
+  }
+  close();
 }
 
 /*
@@ -330,6 +330,51 @@ var inserts = {
 		}
 
 	},
+  'input.confirm_button,button.confirm_button':
+    function(e) {
+      e.onclick = function() {
+        if (validate(e)) {
+          save_focus(e);
+          var person = prompt("Confirm rejection of this GL Posting and Enter Reason/Memo", "");
+          if(person!==null){
+            promptmessage = document.getElementsByName('prompt_message')[0]
+            if(promptmessage){
+              promptmessage.value=person;
+            }
+            var asp = e.getAttribute('aspect')
+            if (asp && (asp.indexOf('process') !== -1))
+              JsHttpRequest.request(this, null, 600000); // ten minutes for backup
+            else
+              JsHttpRequest.request(this);
+          }
+
+        }
+        return false;
+      }
+    },
+
+  'input.void_button,button.void_button':
+    function(e) {
+      e.onclick = function() {
+        if (validate(e)) {
+          save_focus(e);
+          var person = prompt("Are you sure you want to void this transaction ? This action cannot be undone. If so Please Enter Memo", "");
+          if(person!==null){
+            promptmessage = document.getElementsByName('void_message')[0]
+            if(promptmessage){
+              promptmessage.value=person;
+            }
+            var asp = e.getAttribute('aspect')
+            if (asp && (asp.indexOf('process') !== -1))
+              JsHttpRequest.request(this, null, 600000); // ten minutes for backup
+            else
+              JsHttpRequest.request(this);
+          }
+
+        }
+        return false;
+      }
+    },
 //	'.ajaxsubmit,.editbutton,.navibutton': // much slower on IE7
 	'button.ajaxsubmit,input.ajaxsubmit,input.editbutton,button.editbutton,button.navibutton':
 	function(e) {
