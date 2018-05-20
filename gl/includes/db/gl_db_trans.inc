@@ -683,7 +683,7 @@ function get_sql_for_journal_inquiry($filter, $from, $to, $ref='', $memo='', $al
 
 
 function get_sql_for_pending_journal_inquiry($filter, $from, $to, $ref='',
-                                     $user_id=null)
+                                     $user_id=null,$atype=-1)
 {
 
     $sql = "SELECT
@@ -715,7 +715,8 @@ function get_sql_for_pending_journal_inquiry($filter, $from, $to, $ref='',
     if ($user_id != null)
         $sql .= " AND user_id = ".db_escape($user_id);
 
-
+    if ($atype != ALL_NUMERIC)
+        $sql .= " AND gl.status = ".db_escape($atype);
 
     $sql .= " GROUP BY gl.tran_date, gl.type, gl.type_no";
 
