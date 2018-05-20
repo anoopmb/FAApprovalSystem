@@ -14,7 +14,7 @@ This is one of another modification to FrontAccounting. There may be bugs and I 
 
 Demo
 
-http://membtech.com/demo/fab
+https://membtech.com/demo/fab
 
 Approver 
 login : admin and demo
