@@ -46,17 +46,20 @@ function add_gl_trans($type, $trans_id, $date_, $account, $dimension, $dimension
 		$person_id = $person_type_id = null;
 	
 	$sql = "INSERT INTO ".TB_PREF."gl_trans ( type, type_no, tran_date,
-		account, dimension_id, dimension2_id, memo_, amount";
+		account, dimension_id, dimension2_id, memo_, amount,user_id,status";
 
 	if ($person_type_id != null)
 		$sql .= ", person_type_id, person_id";
+
 
 	$sql .= ") ";
 
 	$sql .= "VALUES (".db_escape($type).", ".db_escape($trans_id).", '$date',
 		".db_escape($account).", ".db_escape($dimension).", "
 		.db_escape($dimension2).", ".db_escape($memo_).", "
-		.db_escape($amount_in_home_currency);
+		.db_escape($amount_in_home_currency).", "
+        .db_escape($_SESSION["wa_current_user"]->user).", "
+        .db_escape($_SESSION["wa_current_user"]->approver);
 
 	if ($person_type_id != null)
 		$sql .= ", ".db_escape($person_type_id).", ". db_escape($person_id);
@@ -144,6 +147,7 @@ function get_gl_transactions($from_date, $to_date, $trans_no=0,
 		AND ISNULL(v.date_)
 		AND gl.tran_date >= '$from'
 		AND gl.tran_date <= '$to'
+		AND gl.status =1
 		AND gl.amount <> 0"; 
 
 	if ($person_id)
@@ -182,7 +186,7 @@ function get_gl_transactions($from_date, $to_date, $trans_no=0,
 
 //--------------------------------------------------------------------------------
 
-function get_gl_trans($type, $trans_id)
+function get_gl_trans($type, $trans_id,$hide_pending=true)
 {
 	$sql = "SELECT gl.*, cm.account_name, IFNULL(refs.reference, '') AS reference, user.real_name, 
 			COALESCE(st.tran_date, dt.tran_date, bt.trans_date, grn.delivery_date, gl.tran_date) as doc_date,
@@ -202,8 +206,10 @@ function get_gl_trans($type, $trans_id)
 
 		." WHERE gl.type= ".db_escape($type) 
 		." AND gl.type_no = ".db_escape($trans_id)
-		." AND gl.amount <> 0"
-		." ORDER BY tran_date, counter";
+		." AND gl.amount <> 0";
+        if($hide_pending)
+            $sql.=" AND gl.status =1";
+        $sql.=" ORDER BY tran_date, counter";
 
 	return db_query($sql, "The gl transactions could not be retrieved");
 }
@@ -221,7 +227,9 @@ function get_gl_wo_cost_trans($trans_id, $cost_type=-1, $all_gl=false)
 			costing.workorder_id=".db_escape($trans_id)
 		."	AND chart.account_code=gl.account
 			AND gl.type=costing.trans_type
-			AND gl.type_no=costing.trans_no";
+			AND gl.type_no=costing.trans_no"
+        ." AND gl.status =1"
+    ;
 	if ($cost_type != -1)
 		$sql .= " AND costing.cost_type=".db_escape($cost_type);
 	$sql .= $all_gl ? " AND amount != 0" : " AND amount < 0";
@@ -238,8 +246,9 @@ function get_gl_wo_issue_trans($trans_id, $person_id=-1, $all_gl=false)
 			.TB_PREF."chart_master chart
 		WHERE issue.workorder_id=".db_escape($trans_id)
 		 ." AND chart.account_code=gl.account
-			AND gl.type=".ST_MANUISSUE." AND gl.type_no=issue.issue_no";
+			AND gl.type=".ST_MANUISSUE." AND gl.type_no=issue.issue_no"
 //			." AND gl.person_type_id=".PT_WORKORDER;
+    ." AND gl.status =1";
 	if ($person_id != -1)
 		$sql .= " AND gl.person_id=".db_escape($person_id);
 	$sql .= $all_gl ? " AND amount != 0" : " AND amount < 0";
@@ -260,6 +269,7 @@ function get_gl_wo_productions($trans_id, $all_gl=false)
 			AND gl.type=".ST_MANURECEIVE."
 			AND gl.type_no=rcv.id
 			AND amount != 0 "
+        ." AND gl.status =1"
 		.($all_gl ? " AND amount != 0" : " AND amount < 0")
 		." ORDER BY type, type_no";
 
@@ -272,7 +282,8 @@ function get_gl_balance_from_to($from_date, $to_date, $account, $dimension=0, $d
 	$to = date2sql($to_date);
 
     $sql = "SELECT SUM(amount) FROM ".TB_PREF."gl_trans
-		WHERE account='$account'";
+		WHERE account='$account'"
+        ." AND status =1";
 	if ($from_date != "")
 		$sql .= "  AND tran_date > '$from'";
 	if ($to_date != "")
@@ -296,7 +307,8 @@ function get_gl_trans_from_to($from_date, $to_date, $account, $dimension=0, $dim
 	$to = date2sql($to_date);
 
     $sql = "SELECT SUM(amount) FROM ".TB_PREF."gl_trans
-		WHERE account='$account'";
+		WHERE account='$account'"
+        ." AND status =1";
 	if ($from_date != "")
 		$sql .= " AND tran_date >= '$from'";
 	if ($to_date != "")
@@ -328,6 +340,7 @@ function get_balance($account, $dimension, $dimension2, $from, $to, $from_incl=t
 		WHERE trans.account=coa.account_code
 			AND coa.account_type=act_type.id 
 		AND act_type.class_id=act_class.cid"
+        ." AND trans.status =1"
 		." AND ".($from_incl ? "tran_date >= '$from_date'" : "tran_date > IF(ctype>0 AND ctype<".CL_INCOME.", '0000-00-00', '$from_date')")
 		." AND ".($to_incl ? "tran_date <= '$to_date'" : "tran_date < '$to_date'")
 		.($account == null ? '' : " AND account=".db_escape($account))
@@ -555,10 +568,12 @@ function get_tax_summary($from, $to, $also_zero_purchases=false)
 
 //--------------------------------------------------------------------------------------------------
 
-function exists_gl_trans($type, $trans_id)
+function exists_gl_trans($type, $trans_id,$hide_pending=true)
 {
 	$sql = "SELECT type_no FROM ".TB_PREF."gl_trans WHERE type=".db_escape($type)
 		." AND type_no=".db_escape($trans_id);
+	if($hide_pending)
+	    $sql.=" AND status=1";
 	$result = db_query($sql, "Cannot retreive a gl transaction");
 
     return (db_num_rows($result) > 0);
@@ -571,7 +586,7 @@ function void_gl_trans($type, $trans_id, $nested=false)
 	if (!$nested)
 		begin_transaction();
 
-	$sql = "UPDATE ".TB_PREF."gl_trans SET amount=0 WHERE type=".db_escape($type)
+	$sql = "UPDATE ".TB_PREF."gl_trans SET amount=0 , status=2 WHERE type=".db_escape($type)
 	." AND type_no=".db_escape($trans_id);
 
 	db_query($sql, "could not void gl transactions for type=$type and trans_no=$trans_id");
@@ -633,7 +648,8 @@ function get_sql_for_journal_inquiry($filter, $from, $to, $ref='', $memo='', $al
 		 		ON gl.type=dim.type AND gl.type_no=dim.type_no" : '')
 		." WHERE gl.tran_date >= '" . date2sql($from) . "'
 		AND gl.tran_date <= '" . date2sql($to) . "'
-		AND gl.amount!=0";
+		AND gl.amount!=0
+        AND gl.status=1";
 	if ($ref) {
 		$sql .= " AND refs.reference LIKE ". db_escape("%$ref%");
 	}
@@ -663,4 +679,101 @@ function get_sql_for_journal_inquiry($filter, $from, $to, $ref='', $memo='', $al
 	$sql .= " GROUP BY gl.tran_date, a.gl_seq, gl.type, gl.type_no";
 
 	return $sql;
+}
+
+
+function get_sql_for_pending_journal_inquiry($filter, $from, $to, $ref='',
+                                     $user_id=null)
+{
+
+    $sql = "SELECT
+		gl.tran_date,
+		gl.type as trans_type,
+		gl.type_no as trans_no,
+		refs.reference,
+		SUM(IF(gl.amount>0, gl.amount,0)) as amount,
+		u.user_id as user_id,
+		gl.status as status";
+
+    $sql.= " FROM ".TB_PREF."gl_trans as gl
+		 LEFT JOIN ".TB_PREF."refs as refs ON
+			(gl.type=refs.type AND gl.type_no=refs.id)
+		 LEFT JOIN ".TB_PREF."users as u ON
+			gl.user_id=u.id
+         WHERE gl.tran_date >= '" . date2sql($from) . "'
+		AND gl.tran_date <= '" . date2sql($to) . "'
+		AND gl.amount!=0";
+    if ($ref) {
+        $sql .= " AND refs.reference LIKE ". db_escape("%$ref%");
+    }
+
+    if ($filter != -1) {
+        $sql .= " AND gl.type=".db_escape($filter);
+    }
+
+
+    if ($user_id != null)
+        $sql .= " AND user_id = ".db_escape($user_id);
+
+
+
+    $sql .= " GROUP BY gl.tran_date, gl.type, gl.type_no";
+
+    return $sql;
+}
+
+function get_approval_details($type, $type_no)
+{
+    $sql = "SELECT * FROM ".TB_PREF."gl_approvals WHERE type="
+        .db_escape($type)." AND type_no=".db_escape($type_no);
+
+    $result=db_query($sql, "could not query comments transaction table");
+    if(db_num_rows($result))
+        return db_fetch($result);
+    else
+        return null;
+}
+
+function exists_approval_details($type, $type_no)
+{
+    $sql = "SELECT id FROM ".TB_PREF."gl_approvals WHERE type=".db_escape($type)."
+		AND type_no=".db_escape($type_no);
+
+    $result = db_query($sql, "Cannot retreive a debtor transaction");
+
+    return (db_num_rows($result) > 0);
+}
+
+function add_update_approval_details($type, $type_no,$status,$memo="")
+{
+    $date=date2sql(Today());
+    begin_transaction();
+    if(exists_approval_details($type, $type_no)){
+        $sql = "UPDATE ".TB_PREF."gl_approvals SET memo_=".db_escape($memo).",tran_date='$date',
+         user_id=".db_escape($_SESSION["wa_current_user"]->user)
+            ." WHERE type=".db_escape($type)." AND type_no=".db_escape($type_no);
+
+        db_query($sql, "could not update approval details");
+
+    }
+    else{
+        $sql = "INSERT INTO ".TB_PREF."gl_approvals (type, type_no, tran_date, user_id,memo_)
+		VALUES (".db_escape($type).",".db_escape($type_no).", '$date'
+            , ".db_escape($_SESSION["wa_current_user"]->user).", 
+            ".db_escape($memo).")";
+        db_query($sql, "could not add approval details");
+    }
+
+    $sql = "UPDATE ".TB_PREF."gl_trans SET status=$status
+         WHERE type=".db_escape($type)." AND type_no=".db_escape($type_no);
+
+    db_query($sql, "could not update approval details");
+
+    $sql = "UPDATE ".TB_PREF."audit_trail SET status=$status
+         WHERE type=".db_escape($type)." AND trans_no=".db_escape($type_no);
+
+    db_query($sql, "could not update approval details");
+
+    commit_transaction();
+
 }

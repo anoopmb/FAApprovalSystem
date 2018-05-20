@@ -40,7 +40,7 @@ function exist_transaction($type, $type_no)
 	switch ($type) 
 	{
 		case ST_JOURNAL : // it's a journal entry
-			if (!exists_gl_trans($type, $type_no))
+			if (!exists_gl_trans($type, $type_no,false))
 				return false;
 			break;
 

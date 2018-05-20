@@ -322,13 +322,76 @@ function button($name, $value, $title=false, $icon=false,  $aspect='')
 			. $rel
 			." >\n";
 }
-
+function confirm_button($name, $value, $title=false, $icon=false,  $aspect='')
+{
+    // php silently changes dots,spaces,'[' and characters 128-159
+    // to underscore in POST names, to maintain compatibility with register_globals
+    $rel = '';
+    if ($aspect == 'selector') {
+        $rel = " rel='$value'";
+        $value = _("Select");
+    }
+    if (user_graphic_links() && $icon)
+    {
+        if ($value == _("Delete")) // Helper during implementation
+            $icon = ICON_DELETE;
+        return "<button type='submit' class='confirm_button' name='"
+            .html_specials_encode(strtr($name, array('.'=>'=2E', '='=>'=3D',// ' '=>'=20','['=>'=5B'
+            )))
+            ."' value='1'" . ($title ? " title='$title'":" title='$value'")
+            . ($aspect ? " aspect='$aspect'" : '')
+            . $rel
+            ." >".set_icon($icon)."</button>\n";
+    }
+    else
+        return "<input type='submit' class='confirm_button' name='"
+            .htmlentities(strtr($name, array('.'=>'=2E', '='=>'=3D',// ' '=>'=20','['=>'=5B'
+            )))
+            ."' value='$value'"
+            .($title ? " title='$title'":'')
+            . ($aspect ? " aspect='$aspect'" : '')
+            . $rel
+            ." >\n";
+}
+function void_button($name, $value, $title=false, $icon=false,  $aspect='')
+{
+    // php silently changes dots,spaces,'[' and characters 128-159
+    // to underscore in POST names, to maintain compatibility with register_globals
+    $rel = '';
+    if ($aspect == 'selector') {
+        $rel = " rel='$value'";
+        $value = _("Select");
+    }
+    if (user_graphic_links() && $icon)
+    {
+        if ($value == _("Delete")) // Helper during implementation
+            $icon = ICON_DELETE;
+        return "<button type='submit' class='void_button' name='"
+            .html_specials_encode(strtr($name, array('.'=>'=2E', '='=>'=3D',// ' '=>'=20','['=>'=5B'
+            )))
+            ."' value='1'" . ($title ? " title='$title'":" title='$value'")
+            . ($aspect ? " aspect='$aspect'" : '')
+            . $rel
+            ." >".set_icon($icon)."</button>\n";
+    }
+    else
+        return "<input type='submit' class='void_button' name='"
+            .htmlentities(strtr($name, array('.'=>'=2E', '='=>'=3D',// ' '=>'=20','['=>'=5B'
+            )))
+            ."' value='$value'"
+            .($title ? " title='$title'":'')
+            . ($aspect ? " aspect='$aspect'" : '')
+            . $rel
+            ." >\n";
+}
 function button_cell($name, $value, $title=false, $icon=false, $aspect='')
 {
 	echo "<td align='center'>";
 	echo button($name, $value, $title, $icon, $aspect);
 	echo "</td>";
 }
+
+
 
 function delete_button_cell($name, $value, $title=false)
 {

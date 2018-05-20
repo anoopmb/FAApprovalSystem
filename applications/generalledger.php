@@ -40,6 +40,8 @@ class general_ledger_app extends application
 			"gl/inquiry/bank_inquiry.php?", 'SA_BANKTRANSVIEW', MENU_INQUIRY);
 		$this->add_lapp_function(1, _("Ta&x Inquiry"),
 			"gl/inquiry/tax_inquiry.php?", 'SA_TAXREP', MENU_INQUIRY);
+        $this->add_lapp_function(1, _("Pending GL Transactions"),
+            "gl/inquiry/gl_pending_inquiry.php?", 'SA_GLAPPROVE', MENU_INQUIRY);
 
 		$this->add_rapp_function(1, _("Trial &Balance"),
 			"gl/inquiry/gl_trial_balance.php?", 'SA_GLANALYTIC', MENU_INQUIRY);
