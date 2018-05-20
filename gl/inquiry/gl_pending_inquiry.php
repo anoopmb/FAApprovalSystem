@@ -80,9 +80,7 @@ function status_msg($row)
         case 2:
             return "Rejected";
             break;
-        case 3:
-            return "Voided";
-            break;
+
     }
 }
 function view_link($row)
@@ -117,6 +115,9 @@ $id = find_submit('reject',false);
 if (strlen($id)>0&&strpos($id, '~') !== false)
 {
    $det=explode("~",$id);
+
+    add_update_approval_details($det[0], $det[1],2,$_POST['prompt_message']);
+        $_POST['prompt_message']="";
    $Ajax->activate('journal_pending_tbl');
 }
 
@@ -126,17 +127,7 @@ $id = find_submit('void',false);
 if (strlen($id)>0&&strpos($id, '~') !== false)
 {
     $det=explode("~",$id);
-    $Ajax->activate('journal_pending_tbl');
-}
-
-
-
-$id = find_submit('approve',false);
-if (strlen($id)>0&&strpos($id, '~') !== false)
-{
-    $det=explode("~",$id);
-
-    $msg = void_transaction($det[0], 6,
+    $msg = void_transaction($det[0], $det[1],
         Today(), $_POST['void_message']);
     $_POST['void_message']="";
     if (!$msg)
@@ -147,7 +138,19 @@ if (strlen($id)>0&&strpos($id, '~') !== false)
     else {
         display_error($msg);
     }
-    $Ajax->activate('_page_body');
+
+    $Ajax->activate('journal_pending_tbl');
+}
+
+
+
+$id = find_submit('approve',false);
+if (strlen($id)>0&&strpos($id, '~') !== false)
+{
+    $det=explode("~",$id);
+    add_update_approval_details($det[0], $det[1],1);
+
+    $Ajax->activate('journal_pending_tbl');
 }
 
 
@@ -156,6 +159,7 @@ $id = find_submit('pending',false);
 if (strlen($id)>0&&strpos($id, '~') !== false)
 {
     $det=explode("~",$id);
+    add_update_approval_details($det[0], $det[1],0);
     $Ajax->activate('journal_pending_tbl');
 }
 

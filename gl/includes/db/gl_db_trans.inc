@@ -586,7 +586,7 @@ function void_gl_trans($type, $trans_id, $nested=false)
 	if (!$nested)
 		begin_transaction();
 
-	$sql = "UPDATE ".TB_PREF."gl_trans SET amount=0 WHERE type=".db_escape($type)
+	$sql = "UPDATE ".TB_PREF."gl_trans SET amount=0 , status=2 WHERE type=".db_escape($type)
 	." AND type_no=".db_escape($trans_id);
 
 	db_query($sql, "could not void gl transactions for type=$type and trans_no=$trans_id");
@@ -702,8 +702,7 @@ function get_sql_for_pending_journal_inquiry($filter, $from, $to, $ref='',
 			gl.user_id=u.id
          WHERE gl.tran_date >= '" . date2sql($from) . "'
 		AND gl.tran_date <= '" . date2sql($to) . "'
-		AND gl.amount!=0
-        AND gl.status <> 1";
+		AND gl.amount!=0";
     if ($ref) {
         $sql .= " AND refs.reference LIKE ". db_escape("%$ref%");
     }
@@ -733,4 +732,48 @@ function get_approval_details($type, $type_no)
         return db_fetch($result);
     else
         return null;
+}
+
+function exists_approval_details($type, $type_no)
+{
+    $sql = "SELECT id FROM ".TB_PREF."gl_approvals WHERE type=".db_escape($type)."
+		AND type_no=".db_escape($type_no);
+
+    $result = db_query($sql, "Cannot retreive a debtor transaction");
+
+    return (db_num_rows($result) > 0);
+}
+
+function add_update_approval_details($type, $type_no,$status,$memo="")
+{
+    $date=date2sql(Today());
+    begin_transaction();
+    if(exists_approval_details($type, $type_no)){
+        $sql = "UPDATE ".TB_PREF."gl_approvals SET memo_=".db_escape($memo).",tran_date='$date',
+         user_id=".db_escape($_SESSION["wa_current_user"]->user)
+            ." WHERE type=".db_escape($type)." AND type_no=".db_escape($type_no);
+
+        db_query($sql, "could not update approval details");
+
+    }
+    else{
+        $sql = "INSERT INTO ".TB_PREF."gl_approvals (type, type_no, tran_date, user_id,memo_)
+		VALUES (".db_escape($type).",".db_escape($type_no).", '$date'
+            , ".db_escape($_SESSION["wa_current_user"]->user).", 
+            ".db_escape($memo).")";
+        db_query($sql, "could not add approval details");
+    }
+
+    $sql = "UPDATE ".TB_PREF."gl_trans SET status=$status
+         WHERE type=".db_escape($type)." AND type_no=".db_escape($type_no);
+
+    db_query($sql, "could not update approval details");
+
+    $sql = "UPDATE ".TB_PREF."audit_trail SET status=$status
+         WHERE type=".db_escape($type)." AND trans_no=".db_escape($type_no);
+
+    db_query($sql, "could not update approval details");
+
+    commit_transaction();
+
 }
