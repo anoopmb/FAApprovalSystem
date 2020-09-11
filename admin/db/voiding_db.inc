@@ -24,7 +24,7 @@ function void_transaction($type, $type_no, $date_, $memo_)
 
 	switch ($type) {
 		case ST_JOURNAL : // it's a journal entry
-			if (!exists_gl_trans($type, $type_no,false))
+			if (!exists_gl_trans($type, $type_no))
 				return _('Selected transaction does not exists.');
 			if ($wo = check_wo_costing($type, $type_no))
 				return sprintf(_('This transaction cannot be voided because it is part of Work Order %s costs.'), $wo);

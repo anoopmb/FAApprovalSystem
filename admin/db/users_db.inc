@@ -11,15 +11,15 @@
 ***********************************************************************/
 
 function add_user($user_id, $real_name, $password, $phone, $email, $role_id, 
-	$language, $profile, $rep_popup, $pos, $directposting=0)
+	$language, $profile, $rep_popup, $pos)
 {
 	$sql = "INSERT INTO ".TB_PREF."users (user_id, real_name, password"
-		.", phone, email, role_id, language, pos, print_profile, rep_popup,allow_direct_posting)
+		.", phone, email, role_id, language, pos, print_profile, rep_popup)
 		VALUES (".db_escape($user_id).", 
 		".db_escape($real_name).", ".db_escape($password) .",".db_escape($phone)
 		.",".db_escape($email).", ".db_escape($role_id).", ".db_escape($language)
 		.", ".db_escape($pos).",".db_escape($profile).",".db_escape($rep_popup)
-		." ,".db_escape($directposting).")";
+		." )";
 
 	return db_query($sql, "could not add user for $user_id");
 }
@@ -88,14 +88,6 @@ function get_user($id)
 	return db_fetch($result);
 }
 
-function get_user_real_name($id)
-{
-    $sql = "SELECT real_name FROM ".TB_PREF."users WHERE id=".db_escape($id);
-
-    $result = db_query($sql, "could not get user $id");
-    $ret= db_fetch($result);
-    return $ret[0];
-}
 //-----------------------------------------------------------------------------------------------
 
 function get_user_by_login($user_id)

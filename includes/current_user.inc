@@ -23,7 +23,6 @@ class current_user
 	var $username;
 	var $name;
 	var $email;
-    var $approver=false;
 	var $company; // user's company
 	var $pos;
 	var $access;
@@ -61,6 +60,7 @@ class current_user
 	function login($company, $loginname, $password)
 	{
 		global $security_areas, $security_groups, $security_headings, $path_to_root, $dflt_lang, $SysPrefs;
+
 		$this->set_company($company);
 	    $this->logged = false;
 
@@ -131,7 +131,6 @@ class current_user
         	    $this->username = $this->loginname;
         	    $this->prefs = new user_prefs($myrow);
         	    $this->user = @$myrow["id"];
-                $this->approver = @$myrow["allow_direct_posting"]?:0;
                 $this->email = @$myrow["email"];
 		    	update_user_visitdate($this->username);
 		    	$this->logged = true;
@@ -159,8 +158,14 @@ class current_user
 			$hash = md5($password);
 
 			update_user_password($user['id'], $user['user_id'], $hash);
+			
+			$sender = get_company_pref('email');
+			if (empty($sender))
+				$header = "";
+			else
+				$header = "From: $sender";
 
-			mail($email, _("New password for")." ".$SysPrefs->app_title, $password);
+			mail($email, _("New password for")." ".$SysPrefs->app_title, $password, $header);
 
 			return true;
 		}
@@ -316,7 +321,7 @@ function number_format2($number, $decimals=0)
 		$dec = $decimals;
 	}
 
-	$num = number_format($number, $dec, $dsep, $tsep);
+	$num = number_format($number, intval($dec), $dsep, $tsep);
 
 	return $decimals==='max' ? rtrim($num, '0') : $num;
 

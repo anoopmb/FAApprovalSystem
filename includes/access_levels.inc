@@ -264,7 +264,6 @@ $security_areas =array(
 	'SA_BUDGETENTRY' => array(SS_GL|9, _("Budget edition")),
 	'SA_STANDARDCOST' => array(SS_GL|10, _("Item standard costs")),
 	'SA_ACCRUALS' => array(SS_GL|12, _("Revenue / Cost Accruals")),
-    'SA_GLAPPROVE' => array(SS_GL|13, _("Allow to Approve GL Postings")),
 
 	'SA_GLANALYTIC' => array(SS_GL_A|1, _("GL analytical reports and inquiries")),
 	'SA_TAXREP' => array(SS_GL_A|2, _("Tax reports and inquiries")),

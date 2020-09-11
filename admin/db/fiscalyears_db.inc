@@ -322,8 +322,9 @@ function delete_this_fiscalyear($selected_id)
 		db_query($sql, "Could not delete workorders");
 		delete_attachments_and_comments(ST_WORKORDER, $row['id']);
 	}
-	$sql = "SELECT loc_code, stock_id, SUM(qty) AS qty, SUM(qty*standard_cost) AS std_cost FROM ".TB_PREF."stock_moves WHERE tran_date <= '$to' GROUP by 
-		loc_code, stock_id";
+	$sql = "SELECT loc_code, stock_id, SUM(qty) AS qty,"
+	    ." SUM(-qty*IF(type=".ST_SUPPRECEIVE." OR type=".ST_SUPPCREDIT.", price, standard_cost)) AS std_cost"
+	    ." FROM ".TB_PREF."stock_moves WHERE tran_date <= '$to' GROUP by loc_code, stock_id";
 	$result = db_query($sql, "Could not retrieve stock moves");
 	while ($row = db_fetch($result))
 	{
@@ -350,6 +351,7 @@ function delete_this_fiscalyear($selected_id)
 
 	$last_account='';
 	$new = false;
+	$total = 0.0;
 	while ($row = db_fetch($result))
 	{
 		if ($last_account != $row['account']) // deletes all subledgers postings, so do it once for account
@@ -364,6 +366,8 @@ function delete_this_fiscalyear($selected_id)
 				(".ST_JOURNAL.", $trans_no, '$to', '{$row['account']}', '$ref', {$row['amount']}, "
 				.db_escape($row['person_type_id'], true).", ".db_escape($row['person_id'], true).")";
 			db_query($sql, "Could not insert gl trans");
+			if ($row['amount'] > 0.0)
+				$total += $row['amount'];
 			$new = true;
 		}
 	}
